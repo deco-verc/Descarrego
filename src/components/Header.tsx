@@ -55,7 +55,7 @@ export default function Header({
             <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
               <Warehouse className="text-white w-7 h-7" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Roteiro Descarga</h1>
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight [text-shadow:_0_1px_2px_rgb(0_0_0_/_10%)]">Roteiro Descarga</h1>
           </div>
           
           <div className="flex items-center gap-2 text-lg font-bold">

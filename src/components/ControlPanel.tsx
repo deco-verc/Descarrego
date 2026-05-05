@@ -115,7 +115,7 @@ export default function ControlPanel({
         </button>
         <button 
           className="btn-secondary bg-blue-50/30 hover:bg-blue-50 text-blue-700 border-blue-100"
-          onClick={() => router.push("/dashboard/reports/daily")}
+          onClick={() => router.push("/reports/daily")}
         >
           <BarChart3 className="w-4 h-4" />
           Ver Relatórios
