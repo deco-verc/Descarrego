@@ -1,26 +1,70 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #f0f7ff;
+  --foreground: #1e293b;
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden;
+  }
+  
+  .input-label {
+    @apply block text-sm font-medium text-slate-700 mb-1;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-medium shadow-sm active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-medium shadow-sm active:scale-95;
+  }
+
+  .table-header {
+    @apply bg-blue-700 text-white font-semibold py-3 px-4 text-center text-sm;
+  }
+  
+  .table-cell {
+    @apply py-2 px-3 border border-slate-200 text-center;
+  }
+
+  .value-negative {
+    @apply text-red-600 font-medium;
+  }
+  
+  .value-positive {
+    @apply text-green-600 font-bold;
+  }
+
+  .area-header {
+    @apply bg-blue-800 text-white py-4 px-6 shadow-md;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+  }
+  
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
 }
