@@ -1,58 +1,100 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #1d4ed8;
+  --color-primary-foreground: #ffffff;
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-card: #ffffff;
+  --color-border: #e2e8f0;
+  --color-success: #16a34a;
+  --color-success-bg: #dcfce7;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fee2e2;
+  --color-warning: #f97316;
+  --color-warning-bg: #ffedd5;
+}
+
 :root {
-  --background: #f0f7ff;
-  --foreground: #1e293b;
-  --primary: #1d4ed8;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
+  --radius: 1rem;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 input, select, textarea {
-  color: #1e293b; /* slate-800 */
+  color: #0f172a;
+  font-family: inherit;
 }
 
 @layer components {
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden;
+    @apply bg-white rounded-[20px] shadow-sm border border-slate-100 overflow-hidden transition-all duration-200;
+  }
+  
+  .card-hover {
+    @apply hover:shadow-md hover:border-blue-100;
   }
   
   .input-label {
-    @apply block text-sm font-medium text-slate-700 mb-1;
+    @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2;
   }
   
   .btn-primary {
-    @apply bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-medium shadow-sm active:scale-95;
+    @apply bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 font-semibold shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
   }
   
   .btn-secondary {
-    @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-medium shadow-sm active:scale-95;
+    @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 font-semibold shadow-sm active:scale-95;
   }
 
+  .btn-ghost {
+    @apply hover:bg-blue-50 text-blue-600 px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-medium;
+  }
+
+  .badge {
+    @apply px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight;
+  }
+
+  .badge-success { @apply bg-green-100 text-green-700 border border-green-200; }
+  .badge-warning { @apply bg-orange-100 text-orange-700 border border-orange-200; }
+  .badge-danger { @apply bg-red-100 text-red-700 border border-red-200; }
+  .badge-info { @apply bg-blue-100 text-blue-700 border border-blue-200; }
+  .badge-muted { @apply bg-slate-100 text-slate-600 border border-slate-200; }
+
   .table-header {
-    @apply bg-blue-700 text-white font-semibold py-3 px-4 text-center text-sm;
+    @apply bg-blue-700 text-white font-bold py-4 px-4 text-center text-xs uppercase tracking-widest;
   }
   
   .table-cell {
-    @apply py-2 px-3 border border-slate-200 text-center;
+    @apply py-3.5 px-4 border-b border-slate-50 text-center;
   }
 
-  .value-negative {
-    @apply text-red-600 font-medium;
+  .currency-input {
+    @apply w-full bg-transparent border-none outline-none text-right font-medium text-slate-800 placeholder:text-slate-300;
   }
-  
-  .value-positive {
-    @apply text-green-600 font-bold;
-  }
+}
 
-  .area-header {
-    @apply bg-blue-800 text-white py-4 px-6 shadow-md;
-  }
+/* Scrollbar refinement */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full hover:bg-slate-300;
 }
 
 /* Print Styles */
@@ -67,6 +109,6 @@ input, select, textarea {
   
   .card {
     box-shadow: none !important;
-    border: 1px solid #ddd !important;
+    border: 1px solid #e2e8f0 !important;
   }
 }

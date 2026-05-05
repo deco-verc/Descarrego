@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { parseCurrencyInput } from "@/lib/currency";
 
 interface CurrencyInputProps {
   value: number;
@@ -13,42 +12,46 @@ interface CurrencyInputProps {
 export default function CurrencyInput({ value, onChange, className = "", readOnly = false }: CurrencyInputProps) {
   const [displayValue, setDisplayValue] = useState("");
 
+  const formatValue = (val: number) => {
+    return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   useEffect(() => {
-    // Only update display if not currently focused to avoid jumping while typing
-    if (document.activeElement !== document.getElementById(`input-${value}`)) {
-      setDisplayValue(value === 0 ? "0,00" : value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-    }
+    setDisplayValue(formatValue(value));
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value;
-    // Allow digits and one comma/dot
-    val = val.replace(/[^\d,.]/g, '');
-    setDisplayValue(val);
-  };
+    if (readOnly) return;
+    
+    // Pegar apenas os números
+    const digits = e.target.value.replace(/\D/g, "");
+    
+    // Converter para centavos
+    const numericValue = parseInt(digits || "0", 10) / 100;
+    
+    // Limite de segurança (ex: 1 bilhão)
+    if (numericValue > 1000000000) return;
 
-  const handleBlur = () => {
-    const numericValue = parseCurrencyInput(displayValue);
+    setDisplayValue(formatValue(numericValue));
     onChange(numericValue);
-    setDisplayValue(numericValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
   };
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (value === 0) setDisplayValue("");
+    if (readOnly) return;
     e.target.select();
   };
 
   return (
-    <div className="flex items-center w-full h-full min-h-[44px]">
-      <span className="pl-3 text-slate-400 text-sm font-medium">R$</span>
+    <div className={`flex items-center w-full h-full min-h-[48px] group transition-all px-3 ${readOnly ? 'bg-slate-50/50' : 'hover:bg-blue-50/30'}`}>
+      <span className="text-slate-300 text-[10px] font-bold mr-1 shrink-0">R$</span>
       <input
         type="text"
+        inputMode="numeric"
         value={displayValue}
         onChange={handleChange}
-        onBlur={handleBlur}
         onFocus={handleFocus}
         readOnly={readOnly}
-        className={`w-full h-full px-1 text-center outline-none bg-transparent font-medium ${className}`}
+        className={`w-full h-full outline-none bg-transparent font-semibold text-right text-slate-700 placeholder:text-slate-200 transition-colors ${readOnly ? 'cursor-not-allowed text-slate-400' : 'focus:text-blue-700'} ${className}`}
         placeholder="0,00"
       />
     </div>

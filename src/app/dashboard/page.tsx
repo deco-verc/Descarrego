@@ -13,7 +13,7 @@ import { applyCommissionSettingsToDay } from "@/lib/commission";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { createAuditLog, getChangedFields } from "@/lib/audit";
-import { Loader2, Warehouse } from "lucide-react";
+import { Loader2, Warehouse, Lock, FileCheck, ScrollText } from "lucide-react";
 
 export default function DashboardPage() {
   const [selectedArea, setSelectedArea] = useState<Area | null>(null);
@@ -201,6 +201,28 @@ export default function DashboardPage() {
     
     const today = format(new Date(), "yyyy-MM-dd");
     setSelectedDate(today);
+    
+    // Forçar reset do record para o estado vazio do dia atual
+    if (selectedArea) {
+      const emptyRecord: DailyRecord = {
+        area_id: selectedArea.id,
+        date: today,
+        morning_entries: 0, afternoon_entries: 0, night_entries: 0,
+        group_morning_entries: 0, group_afternoon_entries: 0, group_night_entries: 0,
+        morning_commission: 0, afternoon_commission: 0, night_commission: 0,
+        group_morning_commission: 0, group_afternoon_commission: 0, group_night_commission: 0,
+        morning_prizes: 0, afternoon_prizes: 0, night_prizes: 0,
+        group_morning_prizes: 0, group_afternoon_prizes: 0, group_night_prizes: 0,
+        total_entries: 0, total_commission: 0, total_prizes: 0, total_final: 0,
+        total_extra_expenses: 0,
+        total_net_final: 0,
+        closed: false,
+        checked: false
+      };
+      setRecord(emptyRecord);
+      setOriginalRecord(null);
+      setIsModified(false);
+    }
   };
 
   const handleToggleClose = async () => {
@@ -265,7 +287,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen pb-20">
+    <div className="flex flex-col min-h-screen bg-slate-50 pb-12">
       <Header 
         selectedArea={selectedArea}
         onSelectArea={setSelectedArea}
@@ -273,9 +295,39 @@ export default function DashboardPage() {
         selectedDate={selectedDate}
         onSelectDate={setSelectedDate}
         onRefreshAreas={fetchAreas}
+        isModified={isModified}
+        isSaved={!!originalRecord && !isModified}
+        isClosed={!!record?.closed}
+        isChecked={!!record?.checked}
       />
       
       <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Resumo Rápido Superior */}
+        {!loading && areas.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-blue-500">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Valor Bruto</span>
+                <span className="text-xl font-bold text-slate-800">R$ {record?.total_entries.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+             </div>
+             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-red-500">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Comissão</span>
+                <span className="text-xl font-bold text-red-600">R$ {record?.total_commission.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+             </div>
+             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-orange-500">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prêmios</span>
+                <span className="text-xl font-bold text-orange-600">R$ {record?.total_prizes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+             </div>
+             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-slate-400">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Despesas</span>
+                <span className="text-xl font-bold text-slate-600">R$ {record?.total_extra_expenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+             </div>
+             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-green-500 bg-green-50/30">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Saldo Líquido</span>
+                <span className="text-2xl font-black text-green-700">R$ {record?.total_net_final.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+             </div>
+          </div>
+        )}
+
         <ControlPanel 
           onSave={handleSave}
           onNew={handleNewDay}
@@ -288,15 +340,46 @@ export default function DashboardPage() {
         />
         
         <div className="mt-8 space-y-8">
-          <DailyTable 
-            record={record} 
-            onChange={handleUpdateRecord}
-            commissionSettings={commissionSettings}
-          />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-             <TotalsSection record={record} />
-             {/* We can add another section here like notes or quick history if needed */}
+          <div className="card border-none shadow-xl overflow-visible">
+            <div className="px-6 py-4 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-center bg-white rounded-t-[20px]">
+               <div>
+                  <h3 className="text-lg font-bold text-slate-800">Fechamento Diário</h3>
+                  <p className="text-xs text-slate-500">Preencha os valores por período e salve o fechamento do dia.</p>
+               </div>
+               <div className="flex gap-2 mt-3 sm:mt-0">
+                  <span className={`badge ${commissionSettings ? 'badge-info' : 'badge-muted'}`}>
+                    {commissionSettings ? `Comissão: ${commissionSettings.commission_type === 'percentage' ? 'Auto %' : 'Fixa'}` : 'Comissão Não Configurada'}
+                  </span>
+                  {record?.closed && <span className="badge badge-info flex items-center gap-1"><Lock size={10} /> Fechado</span>}
+                  {record?.checked && <span className="badge badge-success flex items-center gap-1"><FileCheck size={10} /> Conferido</span>}
+               </div>
+            </div>
+            
+            <DailyTable 
+              record={record} 
+              onChange={handleUpdateRecord}
+              commissionSettings={commissionSettings}
+            />
+            
+            <div className="p-6 bg-slate-50/50 rounded-b-[20px]">
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  <div className="lg:col-span-8">
+                    <label className="input-label flex items-center gap-2">
+                      <ScrollText size={14} className="text-blue-500" />
+                      Observações do Dia
+                    </label>
+                    <textarea 
+                      value={record?.notes || ""}
+                      onChange={(e) => handleUpdateRecord({ notes: e.target.value })}
+                      placeholder="Ex: movimento fraco, prêmio lançado depois, comissão ajustada..."
+                      className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] shadow-sm transition-all"
+                    />
+                  </div>
+                  <div className="lg:col-span-4">
+                     <TotalsSection record={record} />
+                  </div>
+               </div>
+            </div>
           </div>
         </div>
       </main>

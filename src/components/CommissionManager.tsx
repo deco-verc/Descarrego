@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
-import { Area, CommissionSettings, CommissionType, ApplyMode } from "@/types";
+import { Area, CommissionSettings } from "@/types";
 import { toast } from "sonner";
-import { Save, Loader2, Info, ChevronRight, ChevronDown } from "lucide-react";
+import { Save, Loader2, Info, Percent } from "lucide-react";
 import { createAuditLog, getChangedFields } from "@/lib/audit";
 
 export default function CommissionManager({ selectedArea }: { selectedArea: Area | null }) {
   const [settings, setSettings] = useState<Partial<CommissionSettings> | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -34,14 +33,12 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
     } else if (data) {
       setSettings(data);
     } else {
-      // Default settings for new areas
       setSettings({
         area_id: selectedArea.id,
-        commission_type: "manual",
+        commission_type: "percentage",
         default_percentage: 0,
-        default_fixed_value: 0,
         apply_mode: "period",
-        auto_calculate: false,
+        auto_calculate: true,
         allow_manual_override: true
       });
     }
@@ -55,14 +52,16 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Forçar sempre tipo porcentagem e cálculo automático
     const payload = {
       ...settings,
+      commission_type: "percentage",
+      auto_calculate: true,
       user_id: user.id,
       area_id: selectedArea.id,
       updated_at: new Date().toISOString()
     };
 
-    // Get old data for audit
     const { data: oldData } = await supabase
       .from("commission_settings")
       .select("*")
@@ -102,126 +101,74 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-3 text-blue-700 text-sm">
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex gap-3 text-blue-700 text-sm">
         <Info size={20} className="shrink-0" />
-        <p>Configurando comissão para <strong>{selectedArea.name}</strong>. Estas regras serão aplicadas automaticamente aos novos registros desta área.</p>
+        <p>Defina as porcentagens fixas de comissão para Milhar e Grupo da banca <strong>{selectedArea.name}</strong>.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div>
-            <label className="input-label">Tipo de Comissão</label>
-            <select
-              value={settings.commission_type}
-              onChange={(e) => setSettings({...settings, commission_type: e.target.value as CommissionType})}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
-            >
-              <option value="manual">Digitação Manual</option>
-              <option value="percentage">Porcentagem (%)</option>
-              <option value="fixed">Valor Fixo (R$)</option>
-            </select>
-          </div>
-
-          {settings.commission_type === 'percentage' && (
-            <div>
-              <label className="input-label">Porcentagem Padrão (%)</label>
-              <input
-                type="number"
-                value={settings.default_percentage}
-                onChange={(e) => setSettings({...settings, default_percentage: parseFloat(e.target.value) || 0})}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
-              />
-            </div>
-          )}
-
-          {settings.commission_type === 'fixed' && (
-            <div>
-              <label className="input-label">Valor Fixo Padrão (R$)</label>
-              <input
-                type="number"
-                value={settings.default_fixed_value}
-                onChange={(e) => setSettings({...settings, default_fixed_value: parseFloat(e.target.value) || 0})}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-6">
-          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <div>
-              <p className="font-bold text-slate-700 text-sm">Cálculo Automático</p>
-              <p className="text-xs text-slate-500">Aplicar regras ao preencher entradas</p>
-            </div>
-            <input
-              type="checkbox"
-              checked={settings.auto_calculate}
-              onChange={(e) => setSettings({...settings, auto_calculate: e.target.checked})}
-              className="w-6 h-6 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <div>
-              <p className="font-bold text-slate-700 text-sm">Permitir Sobrescrita</p>
-              <p className="text-xs text-slate-500">Permite editar o valor calculado no dia</p>
-            </div>
-            <input
-              type="checkbox"
-              checked={settings.allow_manual_override}
-              onChange={(e) => setSettings({...settings, allow_manual_override: e.target.checked})}
-              className="w-6 h-6 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-slate-100 pt-6">
-        <button 
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors"
-        >
-          {showAdvanced ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-          Configurações Avançadas por Período
-        </button>
-
-        {showAdvanced && (
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-300">
-            {['morning', 'afternoon', 'night', 'group_morning', 'group_afternoon', 'group_night'].map(period => (
-              <div key={period} className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  {period.replace('_', ' ').replace('morning', 'Manhã').replace('afternoon', 'Tarde').replace('night', 'Noite')}
-                </label>
-                <div className="relative">
-                   <input
-                    type="number"
-                    value={(settings as any)[`${period}_${settings.commission_type === 'fixed' ? 'fixed_value' : 'percentage'}`] ?? 0}
-                    onChange={(e) => setSettings({
-                        ...settings, 
-                        [`${period}_${settings.commission_type === 'fixed' ? 'fixed_value' : 'percentage'}`]: parseFloat(e.target.value) || 0
-                    } as any)}
-                    className="w-full pl-4 pr-10 py-2 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-800"
-                    placeholder="Usar padrão"
-                  />
-                  <span className="absolute right-3 top-2 text-slate-400 text-sm">
-                    {settings.commission_type === 'fixed' ? 'R$' : '%'}
-                  </span>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="card p-6 border-slate-100 shadow-sm space-y-4">
+           <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                <Percent size={16} />
               </div>
-            ))}
-          </div>
-        )}
+              <h4 className="font-bold text-slate-800">Comissões Milhar</h4>
+           </div>
+           
+           <div className="space-y-4">
+             {['morning', 'afternoon', 'night'].map(period => (
+               <div key={period} className="flex items-center justify-between gap-4">
+                 <label className="text-sm font-medium text-slate-600">{period === 'morning' ? 'Manhã' : period === 'afternoon' ? 'Tarde' : 'Noite'}</label>
+                 <div className="relative w-32">
+                   <input
+                     type="number"
+                     value={(settings as any)[`${period}_percentage`] ?? 0}
+                     onChange={(e) => setSettings({...settings, [`${period}_percentage`]: parseFloat(e.target.value) || 0})}
+                     className="w-full pl-4 pr-8 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-700"
+                   />
+                   <span className="absolute right-3 top-2 text-slate-400 text-xs">%</span>
+                 </div>
+               </div>
+             ))}
+           </div>
+        </div>
+
+        <div className="card p-6 border-slate-100 shadow-sm space-y-4">
+           <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
+                <Percent size={16} />
+              </div>
+              <h4 className="font-bold text-slate-800">Comissões Grupo</h4>
+           </div>
+           
+           <div className="space-y-4">
+             {['group_morning', 'group_afternoon', 'group_night'].map(period => (
+               <div key={period} className="flex items-center justify-between gap-4">
+                 <label className="text-sm font-medium text-slate-600">{period.includes('morning') ? 'Manhã' : period.includes('afternoon') ? 'Tarde' : 'Noite'}</label>
+                 <div className="relative w-32">
+                   <input
+                     type="number"
+                     value={(settings as any)[`${period}_percentage`] ?? 0}
+                     onChange={(e) => setSettings({...settings, [`${period}_percentage`]: parseFloat(e.target.value) || 0})}
+                     className="w-full pl-4 pr-8 py-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-700"
+                   />
+                   <span className="absolute right-3 top-2 text-slate-400 text-xs">%</span>
+                 </div>
+               </div>
+             ))}
+           </div>
+        </div>
       </div>
 
       <div className="flex justify-end pt-4">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="btn-primary"
+          className="btn-primary w-full md:w-auto justify-center"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Salvar Configurações
+          Salvar Configurações de Comissão
         </button>
       </div>
     </div>
