@@ -55,23 +55,22 @@ export default function PeriodTotalsSection({ record }: PeriodTotalsSectionProps
               </div>
 
               <div className="space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400 font-medium font-inter">Bruto</span>
-                  <span className="font-bold text-slate-700">{formatCurrencyBRL(p.entries)}</span>
+                <div className="flex justify-between items-center text-sm font-bold">
+                  <span className="text-slate-500">Entradas:</span>
+                  <span className="text-slate-800 tracking-tight">{formatCurrencyBRL(p.entries)}</span>
                 </div>
-                <div className="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
-                  <span className="text-slate-400 font-medium font-inter">Comissão</span>
-                  <span className="font-bold text-red-500">-{formatCurrencyBRL(p.commission)}</span>
+                <div className="flex justify-between items-center text-sm font-bold">
+                  <span className="text-slate-500">Comissão:</span>
+                  <span className="text-red-600 tracking-tight">{formatCurrencyBRL(p.commission)}</span>
                 </div>
-                {p.prizes > 0 && (
-                  <div className="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
-                    <span className="text-slate-400 font-medium font-inter">Prêmios</span>
-                    <span className="font-bold text-orange-500">-{formatCurrencyBRL(p.prizes)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Líquido</span>
-                  <span className={`font-black text-lg ${net >= 0 ? 'text-green-600' : 'text-red-700'}`}>
+                <div className="flex justify-between items-center text-sm font-bold">
+                  <span className="text-slate-500">Prêmios:</span>
+                  <span className="text-slate-800 tracking-tight">{formatCurrencyBRL(p.prizes)}</span>
+                </div>
+                
+                <div className="pt-3 border-t border-slate-50 flex justify-between items-center font-bold">
+                  <span className="text-slate-500 text-xs">Saldo:</span>
+                  <span className={`text-base tracking-tight ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {formatCurrencyBRL(net)}
                   </span>
                 </div>

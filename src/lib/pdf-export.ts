@@ -52,9 +52,9 @@ export async function exportDailyPDF(
   doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
   doc.text(`ROTEIRO DESCARGA – ${area.name.toUpperCase()}`, pageWidth / 2, 15, { align: "center" });
   
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
+  doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
   doc.text(`Data: ${formattedDateExt}`, pageWidth / 2, 22, { align: "center" });
 
   // --- Table Title ---
@@ -120,28 +120,31 @@ export async function exportDailyPDF(
       fontStyle: "bold",
       halign: "left",
       lineWidth: 0.1,
-      lineColor: [230, 230, 230]
+      lineColor: [200, 200, 200]
     },
     bodyStyles: {
       fontSize: 8,
       textColor: THEME.text,
       halign: "right",
+      fontStyle: "bold",
       fillColor: [255, 255, 255]
     },
     columnStyles: {
       0: { fontStyle: "bold", halign: "left" },
-      7: { fontStyle: "bold", textColor: [37, 99, 235] }
+      7: { fontStyle: "bold", textColor: THEME.text }
     },
     margin: { left: 14, right: 14 },
     didParseCell: (data) => {
+      data.cell.styles.fontStyle = 'bold';
       if (data.row.index === 1 && data.section === 'body') {
-        data.cell.styles.textColor = THEME.danger;
+        data.cell.styles.textColor = THEME.danger as [number, number, number];
       }
       if (data.row.index === 2 && data.section === 'body') {
-        data.cell.styles.textColor = THEME.warning;
+        data.cell.styles.textColor = THEME.text as [number, number, number];
       }
       if (data.row.index === 3 && data.section === 'body') {
-        data.cell.styles.textColor = THEME.success;
+        const value = (record.total_final);
+        data.cell.styles.textColor = value >= 0 ? THEME.success : THEME.danger;
       }
     }
   });
@@ -186,8 +189,8 @@ export async function exportDailyPDF(
     const net = p.entries - p.commission - p.prizes;
 
     doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(230, 230, 230);
-    doc.roundedRect(x, currentY, cardW, cardH, 2, 2, "FD");
+    doc.setDrawColor(220, 220, 220);
+    doc.roundedRect(x, currentY, cardW, cardH, 1, 1, "FD");
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
@@ -195,8 +198,8 @@ export async function exportDailyPDF(
     doc.text(p.name, x + cardW / 2, currentY + 8, { align: "center" });
 
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
 
     const lineY = currentY + 16;
     doc.text("Entradas:", x + 8, lineY);
@@ -204,18 +207,18 @@ export async function exportDailyPDF(
     doc.text("Prêmios:", x + 8, lineY + 8);
     
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
     doc.text(formatCurrencyBRL(p.entries), x + cardW - 8, lineY, { align: "right" });
     doc.setTextColor(THEME.danger[0], THEME.danger[1], THEME.danger[2]);
     doc.text(formatCurrencyBRL(p.commission), x + cardW - 8, lineY + 4, { align: "right" });
-    doc.setTextColor(THEME.warning[0], THEME.warning[1], THEME.warning[2]);
+    doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
     doc.text(formatCurrencyBRL(p.prizes), x + cardW - 8, lineY + 8, { align: "right" });
 
     doc.setDrawColor(245, 245, 245);
     doc.line(x + 5, lineY + 10, x + cardW - 5, lineY + 10);
 
     doc.setFontSize(9);
-    doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
     doc.text("Saldo:", x + 8, lineY + 15);
     doc.setTextColor(net >= 0 ? THEME.success[0] : THEME.danger[0], net >= 0 ? THEME.success[1] : THEME.danger[1], net >= 0 ? THEME.success[2] : THEME.danger[2]);
     doc.text(formatCurrencyBRL(net), x + cardW - 8, lineY + 15, { align: "right" });
@@ -234,25 +237,25 @@ export async function exportDailyPDF(
   const boxX = (pageWidth - boxW) / 2;
 
   doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(230, 230, 230);
-  doc.roundedRect(boxX, currentY, boxW, boxH, 2, 2, "FD");
+  doc.setDrawColor(220, 220, 220);
+  doc.roundedRect(boxX, currentY, boxW, boxH, 1, 1, "FD");
 
   const colW = boxW / 4;
   const topLabelsY = currentY + 8;
   const valuesY = currentY + 18;
 
   const finalMetrics = [
-    { label: "Valor Bruto Total", value: record.total_entries, color: THEME.muted },
+    { label: "Valor Bruto Total", value: record.total_entries, color: THEME.text },
     { label: "Total Comissão", value: record.total_commission, color: THEME.danger },
-    { label: "Total Prêmios", value: record.total_prizes, color: THEME.muted },
-    { label: "Total Final", value: record.total_net_final, color: THEME.success }
+    { label: "Total Prêmios", value: record.total_prizes, color: THEME.text },
+    { label: "Total Final", value: record.total_net_final, color: record.total_net_final >= 0 ? THEME.success : THEME.danger }
   ];
 
   finalMetrics.forEach((m, i) => {
     const x = boxX + i * colW + colW / 2;
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
     doc.text(m.label, x, topLabelsY, { align: "center" });
 
     doc.setFontSize(14);
@@ -263,12 +266,13 @@ export async function exportDailyPDF(
 
   // --- Footer ---
   doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
   const footerText = `Roteiro Descarga · Gerado em ${now}`;
   doc.text(footerText, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
 
-  const areaSlug = normalizeFileName(area.name);
-  const fileName = `descarrego-diario-${areaSlug}-${date}.pdf`;
+  const dateParts = date.split("-");
+  const shortDate = `${dateParts[2]}.${dateParts[1]}.${dateParts[0].slice(-2)}`;
+  const fileName = `Descarrego-${area.name}-Dia(${shortDate}).pdf`;
   doc.save(fileName);
 }

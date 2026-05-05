@@ -51,11 +51,9 @@ export default function DailyTable({ record, onChange, commissionSettings, onTog
         </thead>
         <tbody className="divide-y divide-slate-100">
           {/* Entradas Geral */}
-          <tr className="group transition-colors hover:bg-blue-50/20">
-            <td className="py-4 px-6 bg-slate-50 border-r border-slate-100">
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-slate-700">Entradas Geral</span>
-              </div>
+          <tr className="group transition-colors hover:bg-slate-50 font-bold text-slate-800">
+            <td className="py-4 px-6 bg-slate-50 border-r border-slate-100 uppercase text-xs">
+              Entradas Geral
             </td>
             {periods.map(p => (
               <td key={p.key} className="p-0 border-r border-slate-50">
@@ -63,22 +61,21 @@ export default function DailyTable({ record, onChange, commissionSettings, onTog
                   value={record[`${p.key}_entries` as keyof DailyRecord] as number}
                   onChange={(val: number) => onChange({ [`${p.key}_entries`]: val })}
                   readOnly={record.closed}
+                  className="font-bold text-slate-800"
                 />
               </td>
             ))}
-            <td className="py-4 px-4 bg-blue-50/50 text-center border-l-2 border-l-blue-200">
-              <span className="text-sm font-black text-blue-800">
+            <td className="py-4 px-4 bg-slate-50 text-center border-l-2 border-l-slate-200">
+              <span className="text-sm font-bold text-slate-800 tracking-tight">
                 {formatCurrencyBRL(record.total_entries)}
               </span>
             </td>
           </tr>
 
           {/* Comissão */}
-          <tr className="group transition-colors hover:bg-red-50/20">
-            <td className="py-4 px-6 bg-slate-50 border-r border-slate-100">
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-slate-700">Comissão</span>
-              </div>
+          <tr className="group transition-colors hover:bg-red-50/20 font-bold text-red-600">
+            <td className="py-4 px-6 bg-slate-50 border-r border-slate-100 uppercase text-xs">
+              Comissão
             </td>
             {periods.map(p => (
               <td key={p.key} className="p-0 border-r border-slate-50">
@@ -91,23 +88,21 @@ export default function DailyTable({ record, onChange, commissionSettings, onTog
                       });
                   }}
                   readOnly={record.closed || (commissionSettings?.auto_calculate && !record.commission_manual_override)}
-                  className={`text-red-600 ${record.closed || (commissionSettings?.auto_calculate && !record.commission_manual_override) ? 'opacity-60' : ''}`}
+                  className={`font-bold text-red-600 ${record.closed || (commissionSettings?.auto_calculate && !record.commission_manual_override) ? 'opacity-60' : ''}`}
                 />
               </td>
             ))}
-            <td className="py-4 px-4 bg-red-50/50 text-center border-l-2 border-l-red-200">
-              <span className="text-sm font-black text-red-700">
+            <td className="py-4 px-4 bg-red-50 text-center border-l-2 border-l-red-200">
+              <span className="text-sm font-bold text-red-600 tracking-tight">
                 {formatCurrencyBRL(record.total_commission)}
               </span>
             </td>
           </tr>
 
           {/* Prêmios */}
-          <tr className="group transition-colors hover:bg-orange-50/20">
-            <td className="py-4 px-6 bg-slate-50 border-r border-slate-100">
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-slate-700">Prêmios</span>
-              </div>
+          <tr className="group transition-colors hover:bg-slate-50 font-bold text-slate-800">
+            <td className="py-4 px-6 bg-slate-50 border-r border-slate-100 uppercase text-xs">
+              Prêmios
             </td>
             {periods.map(p => (
               <td key={p.key} className="p-0 border-r border-slate-50">
@@ -115,34 +110,34 @@ export default function DailyTable({ record, onChange, commissionSettings, onTog
                   value={record[`${p.key}_prizes` as keyof DailyRecord] as number}
                   onChange={(val: number) => onChange({ [`${p.key}_prizes`]: val })}
                   readOnly={record.closed}
-                  className="text-orange-600"
+                  className="font-bold text-slate-800"
                 />
               </td>
             ))}
-            <td className="py-4 px-4 bg-orange-50/50 text-center border-l-2 border-l-orange-200">
-              <span className="text-sm font-black text-orange-700">
+            <td className="py-4 px-4 bg-slate-50 text-center border-l-2 border-l-slate-200">
+              <span className="text-sm font-bold text-slate-800 tracking-tight">
                 {formatCurrencyBRL(record.total_prizes)}
               </span>
             </td>
           </tr>
 
           {/* Saldo Final */}
-          <tr className="bg-slate-50/50">
-            <td className="py-6 px-6 border-r border-slate-100">
-              <div className="flex flex-col">
-                <span className="text-sm font-black text-slate-800">Saldo Final</span>
-                <span className="text-[10px] text-green-600 font-bold uppercase tracking-tight">Resultado Operacional</span>
-              </div>
+          <tr className="bg-slate-100/50 font-bold">
+            <td className="py-6 px-6 border-r border-slate-100 uppercase text-[10px]">
+              Saldo Final
             </td>
-            {periods.map(p => (
-              <td key={p.key} className="text-center border-r border-slate-100">
-                <span className={`text-sm font-bold ${calculateSaldo(p.key) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                  {formatCurrencyBRL(calculateSaldo(p.key))}
-                </span>
-              </td>
-            ))}
-            <td className="py-6 px-4 bg-green-50 text-center border-l-4 border-l-green-500">
-              <span className="text-xl font-black text-green-700">
+            {periods.map(p => {
+              const saldo = calculateSaldo(p.key);
+              return (
+                <td key={p.key} className="text-center border-r border-slate-100 px-2">
+                  <span className={`text-sm font-bold ${saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatCurrencyBRL(saldo)}
+                  </span>
+                </td>
+              );
+            })}
+            <td className={`py-6 px-4 text-center border-l-4 ${record.total_final >= 0 ? 'bg-green-50 border-l-green-600' : 'bg-red-50 border-l-red-600'}`}>
+              <span className={`text-xl font-bold ${record.total_final >= 0 ? 'text-green-700' : 'text-red-700'}`}>
                 {formatCurrencyBRL(record.total_final)}
               </span>
             </td>
