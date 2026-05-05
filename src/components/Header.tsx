@@ -47,6 +47,7 @@ export default function Header({
   const router = useRouter();
   const supabase = createClient();
   const [showSettings, setShowSettings] = useState(false);
+  const [showAreaMenu, setShowAreaMenu] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -106,26 +107,40 @@ export default function Header({
           </div>
 
           {/* Seletor de Área dropdown */}
-          <div className="relative group">
-            <button className="flex items-center gap-2 bg-white hover:bg-slate-50 px-4 py-1.5 rounded-xl border border-slate-200 transition-all font-semibold text-sm text-slate-700">
+          <div className="relative">
+            <button 
+              onClick={() => setShowAreaMenu(!showAreaMenu)}
+              className={`flex items-center gap-2 bg-white hover:bg-slate-50 px-4 py-1.5 rounded-xl border border-slate-200 transition-all font-semibold text-sm text-slate-700 ${showAreaMenu ? 'ring-2 ring-blue-500 border-blue-200' : ''}`}
+            >
                <span>Trocar Área</span>
-               <ChevronDown className="w-4 h-4 text-slate-400" />
+               <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showAreaMenu ? 'rotate-180' : ''}`} />
             </button>
-            <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-slate-100 hidden group-hover:block z-[70] overflow-hidden">
-              <div className="p-2 border-b border-slate-50 bg-slate-50/50">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-2">Áreas Disponíveis</span>
-              </div>
-              {areas.map(area => (
-                <button
-                  key={area.id}
-                  onClick={() => onSelectArea(area)}
-                  className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-all flex items-center justify-between ${selectedArea?.id === area.id ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  {area.name}
-                  {selectedArea?.id === area.id && <CheckCircle2 size={14} />}
-                </button>
-              ))}
-            </div>
+            
+            {showAreaMenu && (
+              <>
+                <div className="fixed inset-0 z-[65]" onClick={() => setShowAreaMenu(false)} />
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-slate-100 z-[70] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                  <div className="p-2 border-b border-slate-50 bg-slate-50/50">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-2">Áreas Disponíveis</span>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {areas.map(area => (
+                      <button
+                        key={area.id}
+                        onClick={() => {
+                          onSelectArea(area);
+                          setShowAreaMenu(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-all flex items-center justify-between ${selectedArea?.id === area.id ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                      >
+                        {area.name}
+                        {selectedArea?.id === area.id && <CheckCircle2 size={14} />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-1 border-l border-slate-100 pl-3 ml-1">
