@@ -55,7 +55,6 @@ export default function DailyTable({ record, onChange, commissionSettings, onTog
             <td className="py-4 px-6 bg-slate-50 border-r border-slate-100">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-slate-700">Entradas Geral</span>
-                <span className="text-[10px] text-blue-500 font-bold uppercase tracking-tight">Venda Bruta</span>
               </div>
             </td>
             {periods.map(p => (
@@ -79,15 +78,6 @@ export default function DailyTable({ record, onChange, commissionSettings, onTog
             <td className="py-4 px-6 bg-slate-50 border-r border-slate-100">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-slate-700">Comissão</span>
-                <div className="flex items-center gap-1">
-                   <span className="text-[10px] text-red-500 font-bold uppercase tracking-tight">Manual / Auto</span>
-                   <button 
-                    onClick={() => !record.closed && onChange({ commission_manual_override: !record.commission_manual_override })}
-                    className={`transition-all ${record.commission_manual_override ? 'text-red-600' : 'text-slate-300 hover:text-slate-400'}`}
-                  >
-                    <Settings2 size={10} />
-                  </button>
-                </div>
               </div>
             </td>
             {periods.map(p => (
@@ -117,7 +107,6 @@ export default function DailyTable({ record, onChange, commissionSettings, onTog
             <td className="py-4 px-6 bg-slate-50 border-r border-slate-100">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-slate-700">Prêmios</span>
-                <span className="text-[10px] text-orange-500 font-bold uppercase tracking-tight">Pago Clientes</span>
               </div>
             </td>
             {periods.map(p => (

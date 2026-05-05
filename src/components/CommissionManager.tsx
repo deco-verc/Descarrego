@@ -52,11 +52,10 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Forçar sempre tipo porcentagem e cálculo automático
+    // Forçar sempre tipo porcentagem
     const payload = {
       ...settings,
       commission_type: "percentage",
-      auto_calculate: true,
       user_id: user.id,
       area_id: selectedArea.id,
       updated_at: new Date().toISOString()
@@ -102,9 +101,27 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex gap-3 text-blue-700 text-sm">
-        <Info size={20} className="shrink-0" />
-        <p>Defina as porcentagens fixas de comissão para Milhar e Grupo da banca <strong>{selectedArea.name}</strong>.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-blue-50 p-6 rounded-2xl border border-blue-100">
+        <div className="flex gap-3 text-blue-700 text-sm">
+          <Info size={20} className="shrink-0" />
+          <p>Defina as porcentagens fixas de comissão para Milhar e Grupo da banca <strong>{selectedArea.name}</strong>.</p>
+        </div>
+        
+        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-blue-100">
+          <span className="text-xs font-bold text-slate-600 uppercase">Cálculo Automático</span>
+          <button
+            onClick={() => setSettings({ ...settings, auto_calculate: !settings?.auto_calculate })}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+              settings?.auto_calculate ? 'bg-blue-600' : 'bg-slate-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                settings?.auto_calculate ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

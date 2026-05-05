@@ -30,8 +30,8 @@ export const calculateDailyTotals = (record: DailyRecord): DailyRecord => {
     
   totals.total_final = totals.total_entries - totals.total_commission - totals.total_prizes;
   
-  // Calculate Net Final after extra expenses
-  totals.total_net_final = totals.total_final - safeNumber(record.total_extra_expenses);
+  // Net final is now equal to total final (no expenses)
+  totals.total_net_final = totals.total_final;
   
   return totals;
 };

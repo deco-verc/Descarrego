@@ -301,28 +301,24 @@ export default function DashboardPage() {
         isChecked={!!record?.checked}
       />
       
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Resumo Rápido Superior */}
+      <main className="container mx-auto px-4 py-6 max-w-7xl animate-in fade-in duration-500">
+        {/* Resumo Rápido Superior (4 Cards agora) */}
         {!loading && areas.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-blue-500">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Valor Bruto</span>
-                <span className="text-xl font-bold text-slate-800">R$ {record?.total_entries.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Valor Bruto</span>
+                <span className="text-xl font-black text-slate-800">R$ {record?.total_entries.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
              </div>
-             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-red-500">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Comissão</span>
-                <span className="text-xl font-bold text-red-600">R$ {record?.total_commission.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-red-500 bg-white/80 backdrop-blur-sm">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Comissão</span>
+                <span className="text-xl font-black text-red-600">R$ {record?.total_commission.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
              </div>
-             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-orange-500">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Prêmios</span>
-                <span className="text-xl font-bold text-orange-600">R$ {record?.total_prizes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-orange-500 bg-white/80 backdrop-blur-sm">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Prêmios</span>
+                <span className="text-xl font-black text-orange-600">R$ {record?.total_prizes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
              </div>
-             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-slate-400">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Despesas</span>
-                <span className="text-xl font-bold text-slate-600">R$ {record?.total_extra_expenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-             </div>
-             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-green-500 bg-green-50/30">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Saldo Líquido</span>
+             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-green-500 bg-green-50/50 backdrop-blur-sm">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Saldo Líquido</span>
                 <span className="text-2xl font-black text-green-700">R$ {record?.total_net_final.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
              </div>
           </div>
@@ -339,16 +335,12 @@ export default function DashboardPage() {
           areaId={selectedArea?.id || ""}
         />
         
-        <div className="mt-8 space-y-8">
-          <div className="card border-none shadow-xl overflow-visible">
-            <div className="px-6 py-4 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-center bg-white rounded-t-[20px]">
-               <div>
-                  <h3 className="text-lg font-bold text-slate-800">Fechamento Diário</h3>
-                  <p className="text-xs text-slate-500">Preencha os valores por período e salve o fechamento do dia.</p>
-               </div>
-               <div className="flex gap-2 mt-3 sm:mt-0">
+        <div className="mt-6">
+          <div className="card border-none shadow-2xl overflow-visible bg-white overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-50 flex justify-end items-center bg-white">
+               <div className="flex gap-2">
                   <span className={`badge ${commissionSettings ? 'badge-info' : 'badge-muted'}`}>
-                    {commissionSettings ? `Comissão: ${commissionSettings.commission_type === 'percentage' ? 'Auto %' : 'Fixa'}` : 'Comissão Não Configurada'}
+                    {commissionSettings ? `Comissão: ${commissionSettings.auto_calculate ? 'Automática' : 'Manual'}` : 'Comissão Não Configurada'}
                   </span>
                   {record?.closed && <span className="badge badge-info flex items-center gap-1"><Lock size={10} /> Fechado</span>}
                   {record?.checked && <span className="badge badge-success flex items-center gap-1"><FileCheck size={10} /> Conferido</span>}
@@ -361,24 +353,9 @@ export default function DashboardPage() {
               commissionSettings={commissionSettings}
             />
             
-            <div className="p-6 bg-slate-50/50 rounded-b-[20px]">
-               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                  <div className="lg:col-span-8">
-                    <label className="input-label flex items-center gap-2">
-                      <ScrollText size={14} className="text-blue-500" />
-                      Observações do Dia
-                    </label>
-                    <textarea 
-                      value={record?.notes || ""}
-                      onChange={(e) => handleUpdateRecord({ notes: e.target.value })}
-                      placeholder="Ex: movimento fraco, prêmio lançado depois, comissão ajustada..."
-                      className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] shadow-sm transition-all"
-                    />
-                  </div>
-                  <div className="lg:col-span-4">
-                     <TotalsSection record={record} />
-                  </div>
-               </div>
+            {/* Totais abaixo da tabela conforme imagem */}
+            <div className="p-8 bg-slate-50/30 border-t border-slate-50">
+               <TotalsSection record={record} />
             </div>
           </div>
         </div>
