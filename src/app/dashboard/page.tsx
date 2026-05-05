@@ -111,9 +111,18 @@ export default function DashboardPage() {
     
     let updatedRecord = { ...record, ...updates };
     
-    // Apply auto-commission if enabled and not overridden
-    if (commissionSettings && commissionSettings.auto_calculate && !updatedRecord.commission_manual_override) {
-      updatedRecord = applyCommissionSettingsToDay(updatedRecord, commissionSettings);
+    // Apply auto-commission logic
+    // We use settings if available, or a default 40/30 structure if not yet configured
+    const effectiveSettings = commissionSettings || {
+        auto_calculate: true,
+        default_percentage: 40,
+        group_morning_percentage: 30,
+        group_afternoon_percentage: 30,
+        group_night_percentage: 30
+    };
+
+    if (effectiveSettings.auto_calculate && !updatedRecord.commission_manual_override) {
+      updatedRecord = applyCommissionSettingsToDay(updatedRecord, effectiveSettings as any);
     }
     
     // Recalculate totals
