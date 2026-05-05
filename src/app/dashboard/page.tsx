@@ -319,10 +319,6 @@ export default function DashboardPage() {
         selectedDate={selectedDate}
         onSelectDate={setSelectedDate}
         onRefreshAreas={fetchAreas}
-        isModified={isModified}
-        isSaved={!!originalRecord && !isModified}
-        isClosed={!!record?.closed}
-        isChecked={!!record?.checked}
         onRefreshRecord={fetchRecord}
       />
       
@@ -342,10 +338,7 @@ export default function DashboardPage() {
         <div className="mt-6">
           <div className="card border-none shadow-2xl overflow-visible bg-white overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-50 flex justify-end items-center bg-white">
-               <div className="flex gap-2">
-                  <span className={`badge ${commissionSettings ? 'badge-info' : 'badge-muted'}`}>
-                    {commissionSettings ? `Comissão: ${commissionSettings.auto_calculate ? 'Automática' : 'Manual'}` : 'Comissão Não Configurada'}
-                  </span>
+               <div className="flex gap-2 font-bold uppercase text-[10px]">
                   {record?.closed && <span className="badge badge-info flex items-center gap-1"><Lock size={10} /> Fechado</span>}
                   {record?.checked && <span className="badge badge-success flex items-center gap-1"><FileCheck size={10} /> Conferido</span>}
                </div>

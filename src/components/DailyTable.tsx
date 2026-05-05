@@ -101,7 +101,7 @@ export default function DailyTable({ record, onChange, commissionSettings, onTog
 
           {/* Prêmios */}
           <tr className="group transition-colors hover:bg-slate-50 font-bold text-slate-800">
-            <td className="py-4 px-6 bg-slate-50 border-r border-slate-100 uppercase text-xs">
+            <td className="py-4 px-6 bg-slate-50 border-r border-slate-100 uppercase text-xs font-bold">
               Prêmios
             </td>
             {periods.map(p => (
@@ -122,8 +122,8 @@ export default function DailyTable({ record, onChange, commissionSettings, onTog
           </tr>
 
           {/* Saldo Final */}
-          <tr className="bg-slate-100/50 font-bold">
-            <td className="py-6 px-6 border-r border-slate-100 uppercase text-[10px]">
+          <tr className="bg-slate-50/50 font-bold">
+            <td className="py-6 px-6 border-r border-slate-100 uppercase text-[10px] text-slate-800">
               Saldo Final
             </td>
             {periods.map(p => {
