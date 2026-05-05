@@ -30,6 +30,7 @@ interface HeaderProps {
   isSaved: boolean;
   isClosed: boolean;
   isChecked: boolean;
+  onRefreshRecord: () => void;
 }
 
 export default function Header({ 
@@ -42,7 +43,8 @@ export default function Header({
   isModified,
   isSaved,
   isClosed,
-  isChecked
+  isChecked,
+  onRefreshRecord
 }: HeaderProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -164,7 +166,10 @@ export default function Header({
 
       <SettingsModal 
         isOpen={showSettings} 
-        onClose={() => setShowSettings(false)} 
+        onClose={() => {
+          setShowSettings(false);
+          onRefreshRecord();
+        }} 
         onRefreshAreas={onRefreshAreas}
         selectedArea={selectedArea}
       />

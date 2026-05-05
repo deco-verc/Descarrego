@@ -75,8 +75,21 @@ export default function DashboardPage() {
       setCommissionSettings(null);
     }
 
+    const effectiveSettings = settingsData || {
+        auto_calculate: true,
+        default_percentage: 40,
+        group_morning_percentage: 30,
+        group_afternoon_percentage: 30,
+        group_night_percentage: 30
+    };
+
     if (recordData) {
-      setRecord(recordData);
+      let updatedRecord = { ...recordData };
+      if (effectiveSettings.auto_calculate && !updatedRecord.commission_manual_override) {
+        updatedRecord = applyCommissionSettingsToDay(updatedRecord, effectiveSettings as any);
+        updatedRecord = calculateDailyTotals(updatedRecord);
+      }
+      setRecord(updatedRecord);
       setOriginalRecord(recordData);
       setIsModified(false);
     } else {
@@ -309,6 +322,7 @@ export default function DashboardPage() {
         isSaved={!!originalRecord && !isModified}
         isClosed={!!record?.closed}
         isChecked={!!record?.checked}
+        onRefreshRecord={fetchRecord}
       />
       
       <main className="container mx-auto px-4 py-6 max-w-7xl animate-in fade-in duration-500">
