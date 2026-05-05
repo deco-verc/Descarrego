@@ -115,7 +115,7 @@ export default function AreaManager({ onRefresh }: { onRefresh: () => Promise<vo
           value={newAreaName}
           onChange={(e) => setNewAreaName(e.target.value)}
           placeholder="Nome da nova área..."
-          className="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
         />
         <button 
           onClick={handleAddArea}
@@ -139,7 +139,7 @@ export default function AreaManager({ onRefresh }: { onRefresh: () => Promise<vo
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1 px-3 py-1 rounded-lg border border-blue-300 outline-none"
+                  className="flex-1 px-3 py-1 rounded-lg border border-blue-300 outline-none text-slate-800"
                   autoFocus
                 />
               ) : (

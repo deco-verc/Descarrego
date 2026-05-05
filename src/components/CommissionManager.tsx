@@ -115,7 +115,7 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
             <select
               value={settings.commission_type}
               onChange={(e) => setSettings({...settings, commission_type: e.target.value as CommissionType})}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
             >
               <option value="manual">Digitação Manual</option>
               <option value="percentage">Porcentagem (%)</option>
@@ -130,7 +130,7 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
                 type="number"
                 value={settings.default_percentage}
                 onChange={(e) => setSettings({...settings, default_percentage: parseFloat(e.target.value) || 0})}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
               />
             </div>
           )}
@@ -142,7 +142,7 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
                 type="number"
                 value={settings.default_fixed_value}
                 onChange={(e) => setSettings({...settings, default_fixed_value: parseFloat(e.target.value) || 0})}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
               />
             </div>
           )}
@@ -201,7 +201,7 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
                         ...settings, 
                         [`${period}_${settings.commission_type === 'fixed' ? 'fixed_value' : 'percentage'}`]: parseFloat(e.target.value) || 0
                     } as any)}
-                    className="w-full pl-4 pr-10 py-2 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full pl-4 pr-10 py-2 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-800"
                     placeholder="Usar padrão"
                   />
                   <span className="absolute right-3 top-2 text-slate-400 text-sm">
