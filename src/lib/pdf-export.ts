@@ -1,21 +1,20 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { DailyRecord, Area, CommissionSettings } from "@/types";
 import { formatCurrencyBRL } from "./currency";
 
 const THEME = {
-  primary: [37, 99, 235], // #2563EB
-  primaryDark: [30, 64, 175], // #1E40AF
-  primaryLight: [219, 234, 254], // #DBEAFE
-  text: [15, 23, 42], // #0F172A
-  muted: [100, 116, 139], // #64748B
-  border: [203, 213, 225], // #CBD5E1
-  background: [248, 250, 252], // #F8FAFC
-  success: [22, 163, 74], // #16A34A
-  successLight: [220, 252, 231],
-  danger: [220, 38, 38], // #DC2626
-  warning: [249, 115, 22], // #F97316
+  primary: [30, 41, 59] as [number, number, number], // slate-800
+  accent: [37, 99, 235] as [number, number, number], // blue-600
+  text: [15, 23, 42] as [number, number, number], // #0F172A
+  muted: [100, 116, 139] as [number, number, number], // #64748B
+  border: [241, 245, 249] as [number, number, number], // #F1F5F9
+  background: [248, 250, 252] as [number, number, number], // #F8FAFC
+  success: [22, 163, 74] as [number, number, number], // #16A34A
+  danger: [220, 38, 38] as [number, number, number], // #DC2626
+  warning: [249, 115, 22] as [number, number, number], // #F97316
 };
 
 function normalizeFileName(text: string) {
@@ -39,96 +38,36 @@ export async function exportDailyPDF(
     format: "a4",
   });
 
-  const formattedDate = format(new Date(date + 'T12:00:00'), "dd/MM/yyyy");
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const formattedDateExt = format(new Date(date + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   const now = format(new Date(), "dd/MM/yyyy HH:mm");
 
-  // --- Top Bar ---
-  doc.setFillColor(THEME.primary[0], THEME.primary[1], THEME.primary[2]);
-  doc.rect(0, 0, 297, 10, "F");
+  // --- Background (Soft Slate) ---
+  doc.setFillColor(THEME.background[0], THEME.background[1], THEME.background[2]);
+  doc.rect(0, 0, pageWidth, doc.internal.pageSize.getHeight(), "F");
 
-  // --- Header ---
+  // --- Center Header ---
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
-  doc.setTextColor(THEME.primaryDark[0], THEME.primaryDark[1], THEME.primaryDark[2]);
-  doc.text("ROTEIRO DESCARGA", 14, 25);
+  doc.setFontSize(14);
+  doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
+  doc.text(`ROTEIRO DESCARGA – ${area.name.toUpperCase()}`, pageWidth / 2, 15, { align: "center" });
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
-  doc.text("Relatório Diário de Fechamento", 14, 30);
+  doc.text(`Data: ${formattedDateExt}`, pageWidth / 2, 22, { align: "center" });
 
-  // --- Report Info Block ---
-  doc.setDrawColor(THEME.border[0], THEME.border[1], THEME.border[2]);
-  doc.setFillColor(252, 252, 252);
-  doc.roundedRect(14, 38, 269, 25, 2, 2, "FD");
-
-  doc.setFontSize(9);
+  // --- Table Title ---
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
   doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
-  
-  // Col 1
-  doc.text("ÁREA:", 20, 47);
-  doc.text("STATUS:", 20, 56);
-  
-  // Col 2
-  doc.text("DATA:", 90, 47);
-  doc.text("COMISSÃO:", 90, 56);
-
-  // Col 3
-  doc.text("GERADO POR:", 160, 47);
-  doc.text("GERADO EM:", 160, 56);
-
-  doc.setFont("helvetica", "normal");
-  doc.text(area.name, 45, 47);
-  doc.text(record.closed ? "FECHADO" : record.checked ? "CONFERIDO" : "SALVO", 45, 56);
-  
-  doc.text(formattedDate, 115, 47);
-  doc.text(settings?.auto_calculate ? "AUTOMÁTICA" : "MANUAL", 115, 56);
-  
-  doc.text(userEmail, 190, 47);
-  doc.text(now, 190, 56);
-
-  // --- Summary Cards ---
-  const cardW = 50;
-  const cardH = 20;
-  const cardGap = 5;
-  let currentX = 14;
-  const currentY = 70;
-
-  const summary = [
-    { label: "VALOR BRUTO", value: record.total_entries, color: THEME.primaryDark },
-    { label: "COMISSÃO", value: record.total_commission, color: THEME.danger },
-    { label: "PRÊMIOS", value: record.total_prizes, color: THEME.warning },
-    { label: "DESPESAS EXTRAS", value: record.total_extra_expenses, color: THEME.danger },
-    { label: "SALDO LÍQUIDO", value: record.total_net_final, color: THEME.success }
-  ];
-
-  summary.forEach((card) => {
-    doc.setDrawColor(THEME.border[0], THEME.border[1], THEME.border[2]);
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(currentX, currentY, cardW, cardH, 1, 1, "FD");
-    
-    // Colored side border
-    doc.setFillColor(card.color[0], card.color[1], card.color[2]);
-    doc.rect(currentX, currentY, 1.5, cardH, "F");
-
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
-    doc.text(card.label, currentX + 5, currentY + 7);
-
-    doc.setFontSize(11);
-    doc.setTextColor(card.color[0], card.color[1], card.color[2]);
-    doc.text(formatCurrencyBRL(card.value), currentX + 5, currentY + 15);
-
-    currentX += cardW + cardGap;
-  });
+  doc.text(`Descarrego - ${area.name}`, pageWidth / 2, 35, { align: "center" });
 
   // --- Main Table ---
-  const headers = [["ITEM", "MANHÃ", "TARDE", "NOITE", "G. MANHÃ", "G. TARDE", "G. NOITE", "DIÁRIO"]];
+  const headers = [["Item", "Manhã", "Tarde", "Noite", "Grupo Manhã", "Grupo Tarde", "Grupo Noite", "Diário"]];
   const body = [
     [
-      "Entradas",
+      "Entradas Geral",
       formatCurrencyBRL(record.morning_entries),
       formatCurrencyBRL(record.afternoon_entries),
       formatCurrencyBRL(record.night_entries),
@@ -170,92 +109,164 @@ export async function exportDailyPDF(
   ];
 
   autoTable(doc, {
-    startY: 95,
+    startY: 40,
     head: headers,
     body: body,
     theme: "grid",
     headStyles: {
-      fillColor: THEME.primaryDark as [number, number, number],
-      textColor: [255, 255, 255] as [number, number, number],
-      fontSize: 9,
+      fillColor: [255, 255, 255],
+      textColor: THEME.text,
+      fontSize: 8,
       fontStyle: "bold",
-      halign: "center"
+      halign: "left",
+      lineWidth: 0.1,
+      lineColor: [230, 230, 230]
     },
     bodyStyles: {
       fontSize: 8,
-      textColor: THEME.text as [number, number, number],
-      halign: "right"
+      textColor: THEME.text,
+      halign: "right",
+      fillColor: [255, 255, 255]
     },
     columnStyles: {
-      0: { fontStyle: "bold", halign: "left", fillColor: [250, 250, 250] as [number, number, number] },
-      7: { fontStyle: "bold", fillColor: THEME.primaryLight as [number, number, number] }
+      0: { fontStyle: "bold", halign: "left" },
+      7: { fontStyle: "bold", textColor: [37, 99, 235] }
     },
+    margin: { left: 14, right: 14 },
     didParseCell: (data) => {
       if (data.row.index === 1 && data.section === 'body') {
-        data.cell.styles.textColor = THEME.danger as [number, number, number];
+        data.cell.styles.textColor = THEME.danger;
       }
       if (data.row.index === 2 && data.section === 'body') {
-        data.cell.styles.textColor = THEME.warning as [number, number, number];
+        data.cell.styles.textColor = THEME.warning;
       }
       if (data.row.index === 3 && data.section === 'body') {
-        data.cell.styles.textColor = THEME.success as [number, number, number];
-        data.cell.styles.fillColor = THEME.successLight as [number, number, number];
+        data.cell.styles.textColor = THEME.success;
       }
     }
   });
 
-  // --- Period Totals ---
-  const finalY = (doc as any).lastAutoTable.finalY + 10;
+  // --- Totais por Período Section ---
+  let currentY = (doc as any).lastAutoTable.finalY + 12;
   
-  doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
   doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
-  doc.text("TOTAIS POR PERÍODO (GERAL)", 14, finalY);
+  doc.text("Totais por Período", pageWidth / 2, currentY, { align: "center" });
 
-  const periodData = [
-    ["Período", "Entradas", "Comissão", "Prêmios", "Saldo"],
-    [
-      "Manhã (M+G)", 
-      formatCurrencyBRL(record.morning_entries + record.group_morning_entries),
-      formatCurrencyBRL(record.morning_commission + record.group_morning_commission),
-      formatCurrencyBRL(record.morning_prizes + record.group_morning_prizes),
-      formatCurrencyBRL((record.morning_entries + record.group_morning_entries) - (record.morning_commission + record.group_morning_commission) - (record.morning_prizes + record.group_morning_prizes))
-    ],
-    [
-      "Tarde (M+G)", 
-      formatCurrencyBRL(record.afternoon_entries + record.group_afternoon_entries),
-      formatCurrencyBRL(record.afternoon_commission + record.group_afternoon_commission),
-      formatCurrencyBRL(record.afternoon_prizes + record.group_afternoon_prizes),
-      formatCurrencyBRL((record.afternoon_entries + record.group_afternoon_entries) - (record.afternoon_commission + record.group_afternoon_commission) - (record.afternoon_prizes + record.group_afternoon_prizes))
-    ],
-    [
-      "Noite (M+G)", 
-      formatCurrencyBRL(record.night_entries + record.group_night_entries),
-      formatCurrencyBRL(record.night_commission + record.group_night_commission),
-      formatCurrencyBRL(record.night_prizes + record.group_night_prizes),
-      formatCurrencyBRL((record.night_entries + record.group_night_entries) - (record.night_commission + record.group_night_commission) - (record.night_prizes + record.group_night_prizes))
-    ]
+  currentY += 6;
+  const cardW = 75;
+  const cardH = 35;
+  const cardGap = 8;
+  const startX = (pageWidth - (cardW * 3 + cardGap * 2)) / 2;
+
+  const periods = [
+    {
+      name: "Manhã Total",
+      entries: record.morning_entries + record.group_morning_entries,
+      commission: record.morning_commission + record.group_morning_commission,
+      prizes: record.morning_prizes + record.group_morning_prizes,
+    },
+    {
+      name: "Tarde Total",
+      entries: record.afternoon_entries + record.group_afternoon_entries,
+      commission: record.afternoon_commission + record.group_afternoon_commission,
+      prizes: record.afternoon_prizes + record.group_afternoon_prizes,
+    },
+    {
+      name: "Noite Total",
+      entries: record.night_entries + record.group_night_entries,
+      commission: record.night_commission + record.group_night_commission,
+      prizes: record.night_prizes + record.group_night_prizes,
+    }
   ];
 
-  autoTable(doc, {
-    startY: finalY + 4,
-    head: [periodData[0]],
-    body: periodData.slice(1),
-    theme: "plain",
-    headStyles: { fontStyle: "bold", fontSize: 8, textColor: THEME.muted as [number, number, number] },
-    bodyStyles: { fontSize: 8 },
-    columnStyles: { 0: { fontStyle: "bold" }, 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "right", fontStyle: "bold" } }
+  periods.forEach((p, i) => {
+    const x = startX + i * (cardW + cardGap);
+    const net = p.entries - p.commission - p.prizes;
+
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(230, 230, 230);
+    doc.roundedRect(x, currentY, cardW, cardH, 2, 2, "FD");
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
+    doc.text(p.name, x + cardW / 2, currentY + 8, { align: "center" });
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
+
+    const lineY = currentY + 16;
+    doc.text("Entradas:", x + 8, lineY);
+    doc.text("Comissão:", x + 8, lineY + 4);
+    doc.text("Prêmios:", x + 8, lineY + 8);
+    
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
+    doc.text(formatCurrencyBRL(p.entries), x + cardW - 8, lineY, { align: "right" });
+    doc.setTextColor(THEME.danger[0], THEME.danger[1], THEME.danger[2]);
+    doc.text(formatCurrencyBRL(p.commission), x + cardW - 8, lineY + 4, { align: "right" });
+    doc.setTextColor(THEME.warning[0], THEME.warning[1], THEME.warning[2]);
+    doc.text(formatCurrencyBRL(p.prizes), x + cardW - 8, lineY + 8, { align: "right" });
+
+    doc.setDrawColor(245, 245, 245);
+    doc.line(x + 5, lineY + 10, x + cardW - 5, lineY + 10);
+
+    doc.setFontSize(9);
+    doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
+    doc.text("Saldo:", x + 8, lineY + 15);
+    doc.setTextColor(net >= 0 ? THEME.success[0] : THEME.danger[0], net >= 0 ? THEME.success[1] : THEME.danger[1], net >= 0 ? THEME.success[2] : THEME.danger[2]);
+    doc.text(formatCurrencyBRL(net), x + cardW - 8, lineY + 15, { align: "right" });
+  });
+
+  // --- Totais do Dia Section ---
+  currentY += cardH + 12;
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(THEME.text[0], THEME.text[1], THEME.text[2]);
+  doc.text("Totais do Dia", pageWidth / 2, currentY, { align: "center" });
+
+  currentY += 6;
+  const boxW = 241;
+  const boxH = 25;
+  const boxX = (pageWidth - boxW) / 2;
+
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(230, 230, 230);
+  doc.roundedRect(boxX, currentY, boxW, boxH, 2, 2, "FD");
+
+  const colW = boxW / 4;
+  const topLabelsY = currentY + 8;
+  const valuesY = currentY + 18;
+
+  const finalMetrics = [
+    { label: "Valor Bruto Total", value: record.total_entries, color: THEME.muted },
+    { label: "Total Comissão", value: record.total_commission, color: THEME.danger },
+    { label: "Total Prêmios", value: record.total_prizes, color: THEME.muted },
+    { label: "Total Final", value: record.total_net_final, color: THEME.success }
+  ];
+
+  finalMetrics.forEach((m, i) => {
+    const x = boxX + i * colW + colW / 2;
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
+    doc.text(m.label, x, topLabelsY, { align: "center" });
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(m.color[0], m.color[1], m.color[2]);
+    doc.text(formatCurrencyBRL(m.value), x, valuesY, { align: "center" });
   });
 
   // --- Footer ---
-  const pageCount = (doc as any).internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
-    const footerText = `Roteiro Descarga · Gerado em ${now} · Página ${i} de ${pageCount}`;
-    doc.text(footerText, 283, 205, { align: "right" });
-  }
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(THEME.muted[0], THEME.muted[1], THEME.muted[2]);
+  const footerText = `Roteiro Descarga · Gerado em ${now}`;
+  doc.text(footerText, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
 
   const areaSlug = normalizeFileName(area.name);
   const fileName = `descarrego-diario-${areaSlug}-${date}.pdf`;

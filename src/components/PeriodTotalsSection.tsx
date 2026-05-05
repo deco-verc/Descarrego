@@ -13,7 +13,7 @@ export default function PeriodTotalsSection({ record }: PeriodTotalsSectionProps
 
   const periods = [
     {
-      name: "Manhã",
+      name: "Manhã Total",
       icon: <Sun size={16} className="text-orange-400" />,
       entries: record.morning_entries + record.group_morning_entries,
       commission: record.morning_commission + record.group_morning_commission,
@@ -21,7 +21,7 @@ export default function PeriodTotalsSection({ record }: PeriodTotalsSectionProps
       color: "blue"
     },
     {
-      name: "Tarde",
+      name: "Tarde Total",
       icon: <CloudSun size={16} className="text-blue-400" />,
       entries: record.afternoon_entries + record.group_afternoon_entries,
       commission: record.afternoon_commission + record.group_afternoon_commission,
@@ -29,7 +29,7 @@ export default function PeriodTotalsSection({ record }: PeriodTotalsSectionProps
       color: "amber"
     },
     {
-      name: "Noite",
+      name: "Noite Total",
       icon: <Moon size={16} className="text-indigo-400" />,
       entries: record.night_entries + record.group_night_entries,
       commission: record.night_commission + record.group_night_commission,
@@ -40,24 +40,18 @@ export default function PeriodTotalsSection({ record }: PeriodTotalsSectionProps
 
   return (
     <div className="mt-8 space-y-4">
-      <div className="flex items-center gap-2 px-1">
-        <div className="h-4 w-1 bg-blue-600 rounded-full" />
-        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Resumo por Período</h3>
+      <div className="flex items-center gap-2 px-1 text-center justify-center">
+        <h3 className="text-base font-bold text-slate-800 uppercase tracking-tight">Totais por Período</h3>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {periods.map((p) => {
           const net = p.entries - p.commission - p.prizes;
           return (
-            <div key={p.name} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  {p.icon}
-                  <span className="font-bold text-slate-800">{p.name}</span>
-                </div>
-                <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-lg bg-slate-100 text-slate-500 tracking-tight`}>
-                  Geral
-                </span>
+            <div key={p.name} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all text-center">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                {p.icon}
+                <span className="font-bold text-slate-800">{p.name}</span>
               </div>
 
               <div className="space-y-3">
