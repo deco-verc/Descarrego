@@ -13,6 +13,7 @@ import { applyCommissionSettingsToDay } from "@/lib/commission";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { createAuditLog, getChangedFields } from "@/lib/audit";
+import { Loader2, Warehouse } from "lucide-react";
 
 export default function DashboardPage() {
   const [selectedArea, setSelectedArea] = useState<Area | null>(null);
@@ -40,6 +41,8 @@ export default function DashboardPage() {
       setAreas(data || []);
       if (data && data.length > 0 && !selectedArea) {
         setSelectedArea(data[0]);
+      } else {
+        setLoading(false);
       }
     }
   }, [supabase, selectedArea]);
@@ -230,7 +233,35 @@ export default function DashboardPage() {
   };
 
   if (loading && !areas.length) {
-    return <div className="p-8 text-center">Carregando...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-slate-50">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
+        <p className="text-slate-600 font-medium">Buscando informações...</p>
+      </div>
+    );
+  }
+
+  if (!loading && areas.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-slate-50">
+        <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 max-w-md">
+          <Warehouse className="w-16 h-16 text-blue-600 mx-auto mb-6" />
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Nenhuma área encontrada</h2>
+          <p className="text-slate-500 mb-8">
+            Você precisa cadastrar sua primeira área de atuação para começar a usar o sistema.
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl shadow-lg transition-all"
+          >
+            Verificar novamente
+          </button>
+          <p className="mt-4 text-xs text-slate-400">
+            Dica: Você pode cadastrar via SQL Editor ou pelo painel do Supabase.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
