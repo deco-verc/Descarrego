@@ -129,7 +129,7 @@ export default function WeeklyReportPage() {
         textColor: THEME.text,
         fontSize: 9,
         fontStyle: "bold",
-        halign: "left",
+        halign: "center", // Centralizado
         lineWidth: 0.1,
         lineColor: [230, 230, 230]
       },
@@ -150,9 +150,9 @@ export default function WeeklyReportPage() {
         // Color for final balance column (4)
         if (data.column.index === 4 && data.section === 'body') {
           const rawValue = data.cell.raw as string;
-          if (rawValue.includes('-')) {
+          if (rawValue && rawValue.toString().includes('-')) {
              data.cell.styles.textColor = THEME.danger;
-          } else {
+          } else if (data.column.index === 4) {
              data.cell.styles.textColor = THEME.success;
           }
         }
@@ -160,6 +160,28 @@ export default function WeeklyReportPage() {
         if (data.row.index === tableBody.length) {
           data.cell.styles.fillColor = [248, 250, 252];
           data.cell.styles.fontSize = 10;
+        }
+      },
+      didDrawCell: (data) => {
+        // Shadow for colored columns (Commission and Balance)
+        if (data.section === 'body' && (data.column.index === 2 || data.column.index === 4)) {
+            const text = data.cell.text[0];
+            const x = data.cell.x + data.cell.width - data.cell.padding('right');
+            const y = data.cell.y + data.cell.height / 2 + 1;
+
+            // Draw shadow
+            doc.setTextColor(220, 220, 220);
+            doc.text(text, x + 0.15, y + 0.15, { align: 'right' });
+
+            // Redraw main text
+            let color = THEME.text;
+            if (data.column.index === 2) color = THEME.danger;
+            if (data.column.index === 4) {
+                color = text.includes('-') ? THEME.danger : THEME.success;
+            }
+            doc.setTextColor(color[0], color[1], color[2]);
+            doc.text(text, x, y, { align: 'right' });
+            return false;
         }
       }
     });
@@ -176,7 +198,7 @@ export default function WeeklyReportPage() {
       <div className="flex flex-col items-center justify-center text-center py-4">
         <div className="flex items-center gap-3 mb-2">
           <Warehouse className="text-blue-600 w-8 h-8" />
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight [text-shadow:_0_1px_2px_rgb(0_0_0_/_10%)]">
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight [text-shadow:_0_1.5px_3px_rgb(0_0_0_/_15%)]">
             Relatório Semanal – {areas.find(a => a.id === selectedAreaId)?.name || "..."}
           </h1>
         </div>

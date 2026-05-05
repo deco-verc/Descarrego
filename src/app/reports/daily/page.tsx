@@ -80,7 +80,7 @@ export default function DailyReportPage() {
     doc.text(`Data: ${formattedDate}`, pageWidth / 2, 28, { align: "center" });
 
     const tableData = [
-      ["Item", "Manhã", "Tarde", "Noite", "Grupo M", "Grupo T", "Grupo N", "Diário"],
+      ["Item", "Manhã", "Tarde", "Noite", "G/Manhã", "G/Tarde", "G/Noite", "Diário"],
       ["Entradas", formatCurrencyBRL(record.morning_entries), formatCurrencyBRL(record.afternoon_entries), formatCurrencyBRL(record.night_entries), formatCurrencyBRL(record.group_morning_entries), formatCurrencyBRL(record.group_afternoon_entries), formatCurrencyBRL(record.group_night_entries), formatCurrencyBRL(record.total_entries)],
       ["Comissão", formatCurrencyBRL(record.morning_commission), formatCurrencyBRL(record.afternoon_commission), formatCurrencyBRL(record.night_commission), formatCurrencyBRL(record.group_morning_commission), formatCurrencyBRL(record.group_afternoon_commission), formatCurrencyBRL(record.group_night_commission), formatCurrencyBRL(record.total_commission)],
       ["Prêmios", formatCurrencyBRL(record.morning_prizes), formatCurrencyBRL(record.afternoon_prizes), formatCurrencyBRL(record.night_prizes), formatCurrencyBRL(record.group_morning_prizes), formatCurrencyBRL(record.group_afternoon_prizes), formatCurrencyBRL(record.group_night_prizes), formatCurrencyBRL(record.total_prizes)],
@@ -97,6 +97,7 @@ export default function DailyReportPage() {
         textColor: THEME.text,
         fontSize: 8,
         fontStyle: "bold",
+        halign: "center", // Centralizado
         lineWidth: 0.1,
       },
       bodyStyles: {
@@ -115,11 +116,35 @@ export default function DailyReportPage() {
         }
         if (data.row.index === 3 && data.section === 'body') {
           const rawValue = data.cell.raw as string;
-          if (rawValue && rawValue.includes('-')) {
+          if (rawValue && rawValue.toString().includes('-')) {
             data.cell.styles.textColor = THEME.danger;
           } else if (data.column.index > 0) {
             data.cell.styles.textColor = THEME.success;
           }
+        }
+      },
+      didDrawCell: (data) => {
+        // Shadow for colored rows (Commission index 1 and Final Balance index 3)
+        if (data.section === 'body' && (data.row.index === 1 || data.row.index === 3)) {
+            if (data.column.index > 0) {
+                const text = data.cell.text[0];
+                const x = data.cell.x + data.cell.width - data.cell.padding('right');
+                const y = data.cell.y + data.cell.height / 2 + 1;
+
+                // Draw shadow
+                doc.setTextColor(220, 220, 220);
+                doc.text(text, x + 0.15, y + 0.15, { align: 'right' });
+
+                // Redraw main text
+                let color = THEME.text;
+                if (data.row.index === 1) color = THEME.danger;
+                if (data.row.index === 3) {
+                    color = text.includes('-') ? THEME.danger : THEME.success;
+                }
+                doc.setTextColor(color[0], color[1], color[2]);
+                doc.text(text, x, y, { align: 'right' });
+                return false;
+            }
         }
       }
     });
@@ -132,7 +157,7 @@ export default function DailyReportPage() {
       <div className="flex flex-col items-center justify-center text-center py-4">
         <div className="flex items-center gap-3 mb-2">
           <Warehouse className="text-blue-600 w-8 h-8" />
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight [text-shadow:_0_1px_2px_rgb(0_0_0_/_10%)]">
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight [text-shadow:_0_1.5px_3px_rgb(0_0_0_/_15%)]">
             Relatório Diário – {areas.find(a => a.id === selectedAreaId)?.name || "..."}
           </h1>
         </div>
@@ -187,7 +212,7 @@ export default function DailyReportPage() {
                        <th className="py-4 px-3 font-bold text-slate-500 uppercase text-[10px]">G/M</th>
                        <th className="py-4 px-3 font-bold text-slate-500 uppercase text-[10px]">G/T</th>
                        <th className="py-4 px-3 font-bold text-slate-500 uppercase text-[10px]">G/N</th>
-                       <th className="py-4 px-6 font-bold text-slate-500 uppercase text-[10px] bg-slate-50/80">Total</th>
+                       <th className="py-4 px-6 font-bold text-slate-500 uppercase text-[10px] bg-slate-50/80 text-shadow-sm">Total</th>
                     </tr>
                  </thead>
                  <tbody className="divide-y divide-slate-50">
@@ -203,13 +228,13 @@ export default function DailyReportPage() {
                     </tr>
                     <tr className="hover:bg-slate-50/50 transition-colors">
                        <td className="py-4 px-6 text-left font-bold text-slate-700">Comissão</td>
-                       <td className="py-4 px-3 font-bold text-red-600">{formatCurrencyBRL(record.morning_commission)}</td>
-                       <td className="py-4 px-3 font-bold text-red-600">{formatCurrencyBRL(record.afternoon_commission)}</td>
-                       <td className="py-4 px-3 font-bold text-red-600">{formatCurrencyBRL(record.night_commission)}</td>
-                       <td className="py-4 px-3 font-bold text-red-600">{formatCurrencyBRL(record.group_morning_commission)}</td>
-                       <td className="py-4 px-3 font-bold text-red-600">{formatCurrencyBRL(record.group_afternoon_commission)}</td>
-                       <td className="py-4 px-3 font-bold text-red-600">{formatCurrencyBRL(record.group_night_commission)}</td>
-                       <td className="py-4 px-6 font-bold bg-slate-50/30 text-red-700">{formatCurrencyBRL(record.total_commission)}</td>
+                       <td className="py-4 px-3 font-bold text-red-600 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)]">{formatCurrencyBRL(record.morning_commission)}</td>
+                       <td className="py-4 px-3 font-bold text-red-600 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)]">{formatCurrencyBRL(record.afternoon_commission)}</td>
+                       <td className="py-4 px-3 font-bold text-red-600 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)]">{formatCurrencyBRL(record.night_commission)}</td>
+                       <td className="py-4 px-3 font-bold text-red-600 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)]">{formatCurrencyBRL(record.group_morning_commission)}</td>
+                       <td className="py-4 px-3 font-bold text-red-600 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)]">{formatCurrencyBRL(record.group_afternoon_commission)}</td>
+                       <td className="py-4 px-3 font-bold text-red-600 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)]">{formatCurrencyBRL(record.group_night_commission)}</td>
+                       <td className="py-4 px-6 font-bold bg-slate-50/30 text-red-700 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)]">{formatCurrencyBRL(record.total_commission)}</td>
                     </tr>
                     <tr className="hover:bg-slate-50/50 transition-colors">
                        <td className="py-4 px-6 text-left font-bold text-slate-700">Prêmios</td>
@@ -223,25 +248,25 @@ export default function DailyReportPage() {
                     </tr>
                     <tr className="bg-slate-100/50 font-bold text-slate-800">
                        <td className="py-6 px-6 text-left uppercase text-xs">Saldo Final</td>
-                       <td className={`py-6 px-3 ${record.morning_entries - record.morning_commission - record.morning_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                       <td className={`py-6 px-3 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)] ${record.morning_entries - record.morning_commission - record.morning_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {formatCurrencyBRL(record.morning_entries - record.morning_commission - record.morning_prizes)}
                        </td>
-                       <td className={`py-6 px-3 ${record.afternoon_entries - record.afternoon_commission - record.afternoon_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                       <td className={`py-6 px-3 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)] ${record.afternoon_entries - record.afternoon_commission - record.afternoon_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {formatCurrencyBRL(record.afternoon_entries - record.afternoon_commission - record.afternoon_prizes)}
                        </td>
-                       <td className={`py-6 px-3 ${record.night_entries - record.night_commission - record.night_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                       <td className={`py-6 px-3 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)] ${record.night_entries - record.night_commission - record.night_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {formatCurrencyBRL(record.night_entries - record.night_commission - record.night_prizes)}
                        </td>
-                       <td className={`py-6 px-3 ${record.group_morning_entries - record.group_morning_commission - record.group_morning_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                       <td className={`py-6 px-3 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)] ${record.group_morning_entries - record.group_morning_commission - record.group_morning_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {formatCurrencyBRL(record.group_morning_entries - record.group_morning_commission - record.group_morning_prizes)}
                        </td>
-                       <td className={`py-6 px-3 ${record.group_afternoon_entries - record.group_afternoon_commission - record.group_afternoon_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                       <td className={`py-6 px-3 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)] ${record.group_afternoon_entries - record.group_afternoon_commission - record.group_afternoon_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {formatCurrencyBRL(record.group_afternoon_entries - record.group_afternoon_commission - record.group_afternoon_prizes)}
                        </td>
-                       <td className={`py-6 px-3 ${record.group_night_entries - record.group_night_commission - record.group_night_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                       <td className={`py-6 px-3 [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)] ${record.group_night_entries - record.group_night_commission - record.group_night_prizes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {formatCurrencyBRL(record.group_night_entries - record.group_night_commission - record.group_night_prizes)}
                        </td>
-                       <td className={`py-6 px-6 text-lg [text-shadow:_0_1px_1px_rgb(0_0_0_/_5%)] ${record.total_final >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                       <td className={`py-6 px-6 text-lg [text-shadow:_0_1.5px_2px_rgb(0_0_0_/_10%)] ${record.total_final >= 0 ? 'text-green-700' : 'text-red-700'}`}>
                           {formatCurrencyBRL(record.total_final)}
                        </td>
                     </tr>

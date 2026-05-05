@@ -118,7 +118,7 @@ export async function exportDailyPDF(
       textColor: THEME.text,
       fontSize: 8,
       fontStyle: "bold",
-      halign: "left",
+      halign: "center", // Centraliza os cabeçalhos
       lineWidth: 0.1,
       lineColor: [200, 200, 200]
     },
@@ -139,12 +139,29 @@ export async function exportDailyPDF(
       if (data.row.index === 1 && data.section === 'body') {
         data.cell.styles.textColor = THEME.danger as [number, number, number];
       }
-      if (data.row.index === 2 && data.section === 'body') {
-        data.cell.styles.textColor = THEME.text as [number, number, number];
-      }
       if (data.row.index === 3 && data.section === 'body') {
-        const value = (record.total_final);
+        const value = record.total_final;
         data.cell.styles.textColor = value >= 0 ? THEME.success : THEME.danger;
+      }
+    },
+    // Simulação de sombra nos números coloridos da tabela
+    didDrawCell: (data) => {
+      if (data.section === 'body' && (data.row.index === 1 || data.row.index === 3)) {
+        if (data.column.index > 0) {
+           const text = data.cell.text[0];
+           const x = data.cell.x + data.cell.width - data.cell.padding('right');
+           const y = data.cell.y + data.cell.height / 2 + 1; // Ajuste fino Y
+           
+           // Desenha sombra (cinza muito claro) com pequeno offset
+           doc.setTextColor(220, 220, 220);
+           doc.text(text, x + 0.2, y + 0.2, { align: 'right' });
+           
+           // Volta a cor original para o texto principal
+           const color = (data.row.index === 1) ? THEME.danger : (record.total_final >= 0 ? THEME.success : THEME.danger);
+           doc.setTextColor(color[0], color[1], color[2]);
+           doc.text(text, x, y, { align: 'right' });
+           return false; // Cancela o desenho padrão para evitar duplicidade
+        }
       }
     }
   });
@@ -260,6 +277,12 @@ export async function exportDailyPDF(
 
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
+    
+    // Shadow for totals
+    doc.setTextColor(220, 220, 220);
+    doc.text(formatCurrencyBRL(m.value), x + 0.25, valuesY + 0.25, { align: "center" });
+    
+    // Main color
     doc.setTextColor(m.color[0], m.color[1], m.color[2]);
     doc.text(formatCurrencyBRL(m.value), x, valuesY, { align: "center" });
   });
