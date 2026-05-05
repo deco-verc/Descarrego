@@ -4,7 +4,6 @@ import {
   Plus, 
   Save, 
   Printer, 
-  FileText, 
   BarChart3, 
   FileDown,
   Loader2 
@@ -12,12 +11,8 @@ import {
 import { DailyRecord } from "@/types";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { formatCurrencyBRL } from "@/lib/currency";
-import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { createAuditLog } from "@/lib/audit";
+import { exportDailyPDF } from "@/lib/pdf-export";
 
 interface ControlPanelProps {
   onSave: () => Promise<void>;
@@ -28,6 +23,7 @@ interface ControlPanelProps {
   date: string;
   record: DailyRecord | null;
   areaId: string;
+  commissionSettings: any;
 }
 
 export default function ControlPanel({ 
@@ -38,7 +34,8 @@ export default function ControlPanel({
   areaName,
   date,
   record,
-  areaId
+  areaId,
+  commissionSettings
 }: ControlPanelProps) {
   const router = useRouter();
 
@@ -52,88 +49,29 @@ export default function ControlPanel({
     });
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!record || !areaName) return;
 
-    const doc = new jsPDF();
-    const formattedDate = format(parseISO(date), "dd/MM/yyyy");
-    const fileName = `descarrego-${areaName.toLowerCase().replace(/\s+/g, '-')}-${date}.pdf`;
-
-    // Header
-    doc.setFontSize(18);
-    doc.setTextColor(29, 78, 216); // Blue-700
-    doc.text("ROTEIRO DESCARGA", 105, 15, { align: "center" });
-    
-    doc.setFontSize(12);
-    doc.setTextColor(30, 41, 59);
-    doc.text(`Área: ${areaName}`, 14, 25);
-    doc.text(`Data: ${formattedDate}`, 14, 32);
-
-    // Main Table
-    const tableData = [
-      ["Item", "Manhã", "Tarde", "Noite", "Grupo M", "Grupo T", "Grupo N", "Diário"],
-      ["Entradas", 
-        formatCurrencyBRL(record.morning_entries), 
-        formatCurrencyBRL(record.afternoon_entries), 
-        formatCurrencyBRL(record.night_entries), 
-        formatCurrencyBRL(record.group_morning_entries), 
-        formatCurrencyBRL(record.group_afternoon_entries), 
-        formatCurrencyBRL(record.group_night_entries), 
-        formatCurrencyBRL(record.total_entries)
-      ],
-      ["Comissão", 
-        formatCurrencyBRL(record.morning_commission), 
-        formatCurrencyBRL(record.afternoon_commission), 
-        formatCurrencyBRL(record.night_commission), 
-        formatCurrencyBRL(record.group_morning_commission), 
-        formatCurrencyBRL(record.group_afternoon_commission), 
-        formatCurrencyBRL(record.group_night_commission), 
-        formatCurrencyBRL(record.total_commission)
-      ],
-      ["Prêmios", 
-        formatCurrencyBRL(record.morning_prizes), 
-        formatCurrencyBRL(record.afternoon_prizes), 
-        formatCurrencyBRL(record.night_prizes), 
-        formatCurrencyBRL(record.group_morning_prizes), 
-        formatCurrencyBRL(record.group_afternoon_prizes), 
-        formatCurrencyBRL(record.group_night_prizes), 
-        formatCurrencyBRL(record.total_prizes)
-      ],
-      ["Saldo Final", 
-        formatCurrencyBRL(record.morning_entries - record.morning_commission - record.morning_prizes), 
-        formatCurrencyBRL(record.afternoon_entries - record.afternoon_commission - record.afternoon_prizes), 
-        formatCurrencyBRL(record.night_entries - record.night_commission - record.night_prizes), 
-        formatCurrencyBRL(record.group_morning_entries - record.group_morning_commission - record.group_morning_prizes), 
-        formatCurrencyBRL(record.group_afternoon_entries - record.group_afternoon_commission - record.group_afternoon_prizes), 
-        formatCurrencyBRL(record.group_night_entries - record.group_night_commission - record.group_night_prizes), 
-        formatCurrencyBRL(record.total_final)
-      ],
-    ];
-
-    autoTable(doc, {
-      head: [tableData[0]],
-      body: tableData.slice(1),
-      startY: 40,
-      theme: 'grid',
-      headStyles: { fillColor: [29, 78, 216] },
-      styles: { fontSize: 8 },
-      columnStyles: { 0: { fontStyle: 'bold' } }
-    });
-
-    // Footer
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
-    doc.setFontSize(10);
-    doc.text(`Total Final: ${formatCurrencyBRL(record.total_final)}`, 14, finalY);
-    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, finalY + 7);
-
-    doc.save(fileName);
-    
-    createAuditLog({
-      action: "EXPORT_PDF",
-      entity_type: "DAILY_RECORD",
-      area_id: areaId,
-      date_reference: date,
-    });
+    try {
+      await exportDailyPDF(
+        record,
+        { id: areaId, name: areaName } as any,
+        date,
+        "usuario@sistema.local",
+        commissionSettings
+      );
+      
+      createAuditLog({
+        action: "EXPORT_PDF",
+        entity_type: "DAILY_RECORD",
+        area_id: areaId,
+        date_reference: date,
+      });
+      toast.success("PDF gerado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao gerar PDF profissional.");
+    }
   };
 
   return (
@@ -165,7 +103,7 @@ export default function ControlPanel({
           className="btn-secondary" 
           onClick={handlePrint}
         >
-          <Printer className="w-4 h-4 text-slate-500" />
+          <Printer className="w-4 h-4 text-slate-400" />
           Imprimir
         </button>
         <button 

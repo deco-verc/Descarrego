@@ -68,25 +68,6 @@ export default function Header({
           <div>
             <div className="flex items-center gap-2">
                <h1 className="text-lg font-bold text-slate-800 leading-none">Roteiro Descarga</h1>
-               {isClosed ? (
-                 <span className="badge badge-info flex items-center gap-1">
-                   <Lock size={10} /> Fechado
-                 </span>
-               ) : isChecked ? (
-                 <span className="badge badge-success flex items-center gap-1">
-                   <FileCheck size={10} /> Conferido
-                 </span>
-               ) : isModified ? (
-                 <span className="badge badge-warning flex items-center gap-1 animate-pulse">
-                   <AlertCircle size={10} /> Alterações não salvas
-                 </span>
-               ) : isSaved ? (
-                 <span className="badge badge-success flex items-center gap-1">
-                   <CheckCircle2 size={10} /> Dia Salvo
-                 </span>
-               ) : (
-                 <span className="badge badge-muted">Novo Lançamento</span>
-               )}
             </div>
             <p className="text-slate-500 text-sm mt-0.5 font-medium">
               <span className="text-blue-600 font-bold">{selectedArea?.name || "Nenhuma Área"}</span>
@@ -108,14 +89,13 @@ export default function Header({
             />
           </div>
 
-          {/* Seletor de Área dropdown */}
           <div className="relative">
             <button 
               onClick={() => setShowAreaMenu(!showAreaMenu)}
-              className={`flex items-center gap-2 bg-white hover:bg-slate-50 px-4 py-1.5 rounded-xl border border-slate-200 transition-all font-semibold text-sm text-slate-700 ${showAreaMenu ? 'ring-2 ring-blue-500 border-blue-200' : ''}`}
+              className={`flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 px-5 py-2 rounded-xl border border-blue-200 transition-all font-bold text-sm min-w-[160px] justify-between shadow-sm ${showAreaMenu ? 'ring-2 ring-blue-500' : ''}`}
             >
-               <span>Trocar Área</span>
-               <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showAreaMenu ? 'rotate-180' : ''}`} />
+               <span>{selectedArea?.name || "Trocar Área"}</span>
+               <ChevronDown className={`w-4 h-4 transition-transform ${showAreaMenu ? 'rotate-180' : ''}`} />
             </button>
             
             {showAreaMenu && (

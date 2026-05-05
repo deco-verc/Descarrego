@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import ControlPanel from "@/components/ControlPanel";
 import DailyTable from "@/components/DailyTable";
 import TotalsSection from "@/components/TotalsSection";
+import PeriodTotalsSection from "@/components/PeriodTotalsSection";
 import { calculateDailyTotals, calculatePeriodTotals } from "@/lib/calculations";
 import { applyCommissionSettingsToDay } from "@/lib/commission";
 import { format, parseISO } from "date-fns";
@@ -326,28 +327,6 @@ export default function DashboardPage() {
       />
       
       <main className="container mx-auto px-4 py-6 max-w-7xl animate-in fade-in duration-500">
-        {/* Resumo Rápido Superior (4 Cards agora) */}
-        {!loading && areas.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Valor Bruto</span>
-                <span className="text-xl font-black text-slate-800">R$ {record?.total_entries.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-             </div>
-             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-red-500 bg-white/80 backdrop-blur-sm">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Comissão</span>
-                <span className="text-xl font-black text-red-600">R$ {record?.total_commission.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-             </div>
-             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-orange-500 bg-white/80 backdrop-blur-sm">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Prêmios</span>
-                <span className="text-xl font-black text-orange-600">R$ {record?.total_prizes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-             </div>
-             <div className="card p-4 flex flex-col items-center justify-center border-l-4 border-l-green-500 bg-green-50/50 backdrop-blur-sm">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Saldo Líquido</span>
-                <span className="text-2xl font-black text-green-700">R$ {record?.total_net_final.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-             </div>
-          </div>
-        )}
-
         <ControlPanel 
           onSave={handleSave}
           onNew={handleNewDay}
@@ -357,6 +336,7 @@ export default function DashboardPage() {
           date={selectedDate}
           record={record}
           areaId={selectedArea?.id || ""}
+          commissionSettings={commissionSettings}
         />
         
         <div className="mt-6">
@@ -378,8 +358,11 @@ export default function DashboardPage() {
             />
             
             {/* Totais abaixo da tabela conforme imagem */}
-            <div className="p-8 bg-slate-50/30 border-t border-slate-50">
-               <TotalsSection record={record} />
+            <div className="p-8 bg-slate-50/20 border-t border-slate-50 space-y-8">
+               <PeriodTotalsSection record={record} />
+               <div className="pt-4 border-t border-slate-100">
+                 <TotalsSection record={record} />
+               </div>
             </div>
           </div>
         </div>

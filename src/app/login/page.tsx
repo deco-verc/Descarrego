@@ -27,8 +27,10 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
+    const email = username.includes("@") ? username : `${username}@sistema.local`;
+
     const { error } = await supabase.auth.signInWithPassword({
-      email: `${username}@sistema.local`,
+      email,
       password,
     });
 
