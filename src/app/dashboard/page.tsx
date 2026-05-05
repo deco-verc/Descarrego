@@ -55,6 +55,7 @@ export default function DashboardPage() {
     if (!selectedArea || !selectedDate) return;
     
     setLoading(true);
+    setRecord(null); // Reset state to ensure clean view for the new area/date
     const { data: recordData, error: recordError } = await supabase
       .from("daily_records")
       .select("*")

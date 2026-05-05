@@ -69,11 +69,11 @@ export default function CommissionManager({ selectedArea }: { selectedArea: Area
 
     const { data, error } = await supabase
       .from("commission_settings")
-      .upsert(payload, { onConflict: "user_id,area_id" })
+      .upsert(payload, { onConflict: "area_id" })
       .select().single();
 
     if (error) {
-      toast.error("Erro ao salvar configurações");
+      toast.error("Erro ao salvar configurações: " + error.message);
     } else {
       toast.success("Configurações salvas!");
       setSettings(data);
