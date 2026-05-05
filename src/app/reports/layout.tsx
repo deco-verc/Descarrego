@@ -38,6 +38,7 @@ export default function ReportsLayout({ children }: { children: React.ReactNode 
     { id: "daily", label: "Diário", icon: Calendar, path: "/reports/daily" },
     { id: "weekly", label: "Semanal", icon: CalendarRange, path: "/reports/weekly" },
     { id: "monthly", label: "Mensal", icon: CalendarDays, path: "/reports/monthly" },
+    { id: "custom", label: "Período", icon: CalendarRange, path: "/reports/custom" },
   ];
 
   if (loading) {
